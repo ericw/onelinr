@@ -22,6 +22,7 @@ class Post(db.Model):
   text = db.StringProperty()
   belongs_to = db.ReferenceProperty(Channel)
   date_posted = db.DateTimeProperty(auto_now_add=True)
+  post_id = db.IntegerProperty()
   
 class StartPage(webapp.RequestHandler):
 
@@ -52,8 +53,12 @@ class ChannelPage(webapp.RequestHandler):
     self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts}))
 
   def post(self):
-    post = Post(text=self.request.get('value'), belongs_to=db.get(self.request.get('key')))
-    post.put()
+    channel_key = self.request.get('key')
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel_key ORDER BY post_id DESC", channel_key=channel_key)      
+    last_post = q.get()
+    
+    post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=last_post.post_id+1)
+    post = post.put()
     self.response.out.write(simplejson.dumps(post))
     
 

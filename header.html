@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8">
-  <title> @channel ? "Onelinr Channel: "+@channel.name : "Onelinr"</title>
+  <title>Onelinr Channel: {{channel.name}}</title>
 <!-- if @channel -->
   <link rel="alternate" type="application/rss+xml" href="<%= formatted_channel_path(@channel, :rss) %>" title="Syndication of oneliner channel <%= @channel.name %> (RSS)">
 <!-- end -->

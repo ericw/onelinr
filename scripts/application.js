@@ -20,6 +20,8 @@ OnelinerManager.prototype = {
     this.posted_oneliner_ids = new Array();
     if($('#oneliners li:first').length > 0) {
       this.lastOnelinerId = $('#oneliners li:first').attr('id').substring(9); //state of which latest oneliner id
+    } else {
+      this.lastOnelinerId = 0;
     }
     this.onelinerText = $('#oneliner_value');
     this.onelinerText.val("");
@@ -29,24 +31,24 @@ OnelinerManager.prototype = {
       $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
         console.log(data)
         self.displayOneliner(data);
-        self.posted_oneliner_ids.push(data.id);
+        self.posted_oneliner_ids.push(data.post_id);
         self.onelinerText.val("").focus();
       },'json');
       return false;
     });
 
     setInterval(function() {
-      $.getJSON('/channels/'+self.channel+'/oneliners/latest',{from_id: self.lastOnelinerId}, function(oneliners) {
+      $.getJSON('/'+self.channel+'/latest',{from_id: self.lastOnelinerId}, function(oneliners) {
         oneliners = oneliners.reverse();
         console.log(oneliners)
         $.each(oneliners,function() {
-          if ($.inArray(this.id,self.posted_oneliner_ids) === -1) {
+          if ($.inArray(this.post_id,self.posted_oneliner_ids) === -1) {
             self.displayOneliner(this);
           }
         });
         // set lastOnelinerId to the last id fetched
         if(oneliners.length > 0) {
-          self.lastOnelinerId = oneliners[oneliners.length-1].id;          
+          self.lastOnelinerId = oneliners[oneliners.length-1].post_id;
         }
       });
     },4000);
@@ -78,7 +80,7 @@ OnelinerManager.prototype = {
 
 /* attach observers */
 $(function(){
-  if ($('#channel') && (current_channel = $('#current_channel'))) {
+  if ($('#oneliners').length > 0 && (current_channel = $('#current_channel'))) {
     new OnelinerManager(current_channel.html());
     //var customizr = new ChannelCustomizr();
   }

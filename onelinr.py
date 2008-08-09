@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import wsgiref.handlers
+import logging
 from google.appengine.ext import db
 
 from google.appengine.ext import webapp
@@ -48,13 +49,14 @@ class ChannelPage(webapp.RequestHandler):
       channel.put()
     
     posts = Post.all()
-    posts.filter("belongs_to =", channel.key())    
+    posts.filter("belongs_to =", channel.key()).order('-post_id')
     
     self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts}))
 
   def post(self):
     channel_key = self.request.get('key')
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel_key ORDER BY post_id DESC", channel_key=channel_key)      
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel_key ORDER BY post_id DESC", channel_key=db.get(channel_key))
+    logging.info(channel_key)
     last_post = q.get()
     
     if last_post:
@@ -72,15 +74,26 @@ class LatestPosts(webapp.RequestHandler):
     name = url_to_channel_name(self.request.uri)
     get_from = self.request.get('from_id')
     
-    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)      
+    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)
     channel = q.get()
     
     # ADD ERROR CHECKING
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND post_id > :get_from ORDER BY post_id DESC", key=channel, get_from=int(get_from))   #MAKE THIS BETTER   
+    posts = q.fetch(100)
+    logging.info(posts)
     
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND post_id > :get_from", key=channel.key(), get_from=get_from)   #MAKE THIS BETTER   
-    posts = q.fetch(100) 
+    posts_json = "["
+    idx = 1
+    for post in posts:
+      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}"
+      if idx != len(posts):
+        posts_json += ","
+      idx += 1
+    posts_json += "]"
     
-    self.response.out.write(simplejson.dumps(posts))
+    logging.info(posts_json)
+    
+    self.response.out.write(posts_json)
 
 def main():
   application = webapp.WSGIApplication([('/', StartPage),

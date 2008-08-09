@@ -57,7 +57,12 @@ class ChannelPage(webapp.RequestHandler):
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel_key ORDER BY post_id DESC", channel_key=channel_key)      
     last_post = q.get()
     
-    post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=last_post.post_id+1)
+    if last_post:
+      next_id = last_post.post_id+1
+    else: 
+      next_id = 1
+    
+    post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=next_id)
     post = post.put()
     self.response.out.write(simplejson.dumps(post))
     
@@ -72,7 +77,7 @@ class LatestPosts(webapp.RequestHandler):
     
     # ADD ERROR CHECKING
     
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND id > :get_from", key=channel.key(), get_from=get_from)   #MAKE THIS BETTER   
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND post_id > :get_from", key=channel.key(), get_from=get_from)   #MAKE THIS BETTER   
     posts = q.fetch(100) 
     
     self.response.out.write(simplejson.dumps(posts))

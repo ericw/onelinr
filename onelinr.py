@@ -6,13 +6,28 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp \
   import template
+
+from django.utils import simplejson
   
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+class Channel(db.Model):
+  name = db.StringProperty(required=True)
+  fore_color = db.StringProperty()
+  back_color = db.StringProperty()
+  font = db.TextProperty()
+  date_created = db.DateTimeProperty(auto_now_add=True)
+
+class Post(db.Model):
+  text = db.StringProperty()
+  belongs_to = db.ReferenceProperty(Channel)
+  date_posted = db.DateTimeProperty(auto_now_add=True)
+  
 class StartPage(webapp.RequestHandler):
 
   def get(self):
-    self.response.out.write(template.render('index.html', {}))
+    channels = Channel.all()
+    self.response.out.write(template.render('index.html', {'channels':channels}))
 
 class AboutPage(webapp.RequestHandler):
 
@@ -22,20 +37,56 @@ class AboutPage(webapp.RequestHandler):
 class ChannelPage(webapp.RequestHandler):
 
   def get(self):
-    self.response.out.write(template.render('channel.html', {}))
+    name = url_to_channel_name(self.request.uri)
+    
+    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)      
+    channel = q.get()
+
+    if not channel:
+      channel = Channel(name=name)
+      channel.put()
+    
+    posts = Post.all()
+    posts.ancestor(channel)    
+    
+    self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts}))
 
   def post(self):
-    self.response.out.write("Ajax")
+    Post(text=self.request.get('value'), belongs_to=self.request.get('key')).put()
+    self.response.out.write("Posted onelinr")
     
+
+class LatestPosts(webapp.RequestHandler):
+  def get(self):
+    name = url_to_channel_name(self.request.uri)
+    get_from = self.request.get('from_id')
+    
+    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)      
+    channel = q.get()
+    
+    # ADD ERROR CHECKING
+    
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND id > :get_from", key=channel.key(), get_from=get_from)   #MAKE THIS BETTER   
+    posts = q.fetch(100) 
+    
+    self.response.out.write(simplejson.dumps(posts))
 
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
                                         ('/about', AboutPage),
+                                        ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
                                        debug=True)
                                        
   run_wsgi_app(application)
 
+
+def url_to_channel_name(url):
+  url_array = url.split("/")
+  if len(url_array) > 3:
+    return url_array[3].lower()
+  else:
+    return ""
 
 if __name__ == '__main__':
   main()

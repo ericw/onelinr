@@ -54,7 +54,7 @@ OnelinerManager.prototype = {
     },4000);
   },
   displayOneliner: function(oneliner) {
-    $('<li id="oneliner-'+oneliner.post_id+'">'+oneliner.text+' <a href="/channels/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
+    $('<li id="oneliner-'+oneliner.post_id+'">'+oneliner.text+' <a href="/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
       .prependTo($('#oneliners'))
       .hide()
       .fadeIn();

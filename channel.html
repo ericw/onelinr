@@ -32,7 +32,7 @@ This is a test oneliner.
   {% for p in posts %}
   <li id="oneliner-{{p.post_id}}">
     {{p.text}}
-    <a href="http://onelinr.com/{{channel.name}}#oneliner-#{p.id}" title="Permalink for this oneliner" class="permalink">#</a>
+    <a href="http://onelinr.com/{{channel.name}}#oneliner-{{p.post_id}}" title="Permalink for this oneliner" class="permalink">#</a>
   </li>
   {% endfor %}
 </ul>

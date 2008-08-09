@@ -1,6 +1,36 @@
-START
-
-{% for ch in channels %}
-{{ch.name}}
-{% endfor %}
- 
+{% include "header.html" %}
+<body>
+<div id="welcome">
+  <h1>Onelinr <span>by <a href="http://eric.wahlforss.com/2007/04/06/onelinr/">Eric Wahlforss</a></span></h1>
+  <p>At <span class="highlight">Onelinr</span> you can start <em>your own oneliner channel</em> by simply typing <a href="/channels/sandbox">onelinr.com/yours</a> in the address bar of your browser. Or type here:</p>
+  <form id="new_channel" method="post">
+    <div>
+      <input id="channel_name" name="channel[name]" maxlength="30" type="text" value="Your Oneliner Channel" onclick="this.select()">
+    <!--<%= submit_tag 'Go to channel' %>-->
+    </div>
+  </form>
+  <script type="text/javascript">
+  $('channel_name').focus();
+  $('channel_name').select();
+  </script>
+  <h2>Active Onelinr Channels</h2>
+  <ul id="channel-cloud">
+    {% for ch in channels %}
+      <li class=""><a href="/{{ch.name}}">{{ch.name}}</a></li>
+    {% endfor %}
+  </ul>
+  <div id="changelog">
+    <h3>Changelog</h3>
+    <ul>
+      <li><em class="date">August 9th, 2008</em> Onelinr is now running on Google App Engine &amp; jQuery! Thanks to <a href="http://hinkeb.com">Henrik</a> for helping me port it. It's also open-sourced on <a href="http://github.com/ericw/onelinr">GitHub</a>, so feel free to fork away!</li>
+      <li><em class="date">April 18th, 2007</em> Simplified the posting API and improved sorting order of channels on first page.</li>
+      <li><em class="date">April 14th, 2007</em> HTML is now escaped in oneliners.</li>
+      <li><em class="date">April 13th, 2007</em> Fixed a small bug in name validation of channels (caused the front page to break earlier).</li>
+      <li><em class="date">April 12th, 2007</em> With the help of <a href="http://joeljunstrom.jaiku.com/">Joel Junström</a> of <a href="http://winstondesign.se">Winston Design</a> the entire service is now <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">RESTFul</a> and has better session management. Basic permalinks for oneliners added (will be improved). RSS feeds are available for each channel. Mail me if you want <a href="http://dev.onelinr.com/">svn and trac</a> access.</li>
+      <li><em class="date">April 6th, 2007</em> Added Textile support. Bugfixes.</li>
+      <li><em class="date">April 5th, 2007</em> <a href="http://eric.wahlforss.com/2007/04/06/onelinr/">First release</a>.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html> 

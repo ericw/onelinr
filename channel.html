@@ -1,5 +1,48 @@
-{{channel.name}}
-
-{% for p in posts %}
-{{p.text}}
-{% endfor %}
+{% include "header.html" %}
+<div id="header">
+  <a id="text-logo" href="/">Onelinr</a> | You are viewing the {{channel.name}} oneliner channel. <a href="http://whytheluckystiff.net/ruby/redcloth/">Textile</a> is enabled.
+<!--  <span id="customizr">
+    <span id="text-color">
+      <form>
+        <span class="type">Color</span>
+        <input type="text" id="text-color-value" value="FF33FF">
+        <span class="type">Background</span>
+        <input type="text" id="background-color-value" value="FF33FF">
+      </form>
+      <span class="value"></span>
+    </span>
+    <span id="background">
+      <span class="type">Background</span>
+      <span class="value"></span>
+    </span>
+  </span>-->
+</div>
+<!--<div id="permalinked-oneliner-back">
+<p >
+This is a test oneliner.
+</p>
+<div id="close-oneliner-box" onclick="Effect.Fade('permalinked-oneliner-back')"></div>
+</div>
+<div id="permalinked-oneliner">
+<p>
+This is a test oneliner.
+</p>
+</div>-->
+<ul id="oneliners">
+  {% for p in posts %}
+  <li id="oneliner-{{p.post_id}}">
+    {{p.text}}
+    <a href="http://onelinr.com/{{channel.name}}#oneliner-#{p.id}" title="Permalink for this oneliner" class="permalink">#</a>
+  </li>
+  {% endfor %}
+</ul>
+<form action="postoneliner" method="post" id="oneliner-form">
+  <input type="hidden" value="{{channel.key}}" id="key">
+  <div>
+    <input type="text" id="oneliner_value" name="value" autocomplete="off">
+  </div>
+  <input type="submit" value="Say it">
+</form>
+<span id="current_channel" style="display:none">{{channel.name}}</span>
+</body>
+</html>

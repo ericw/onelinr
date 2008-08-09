@@ -63,7 +63,7 @@ class ChannelPage(webapp.RequestHandler):
       next_id = 1
     
     post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=next_id)
-    post = post.put()
+    post = db.get(post.put())
     self.response.out.write(simplejson.dumps(post))
     
 

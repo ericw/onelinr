@@ -64,7 +64,7 @@ class ChannelPage(webapp.RequestHandler):
     
     post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=next_id)
     post = db.get(post.put())
-    self.response.out.write(simplejson.dumps(post))
+    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
     
 
 class LatestPosts(webapp.RequestHandler):

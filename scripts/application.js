@@ -27,6 +27,7 @@ OnelinerManager.prototype = {
     var self = this;
     $('#oneliner-form').bind('submit', function(ev) {
       $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
+        console.log(data)
         self.displayOneliner(data);
         self.posted_oneliner_ids.push(data.id);
         self.onelinerText.val("").focus();
@@ -51,7 +52,7 @@ OnelinerManager.prototype = {
     },4000);
   },
   displayOneliner: function(oneliner) {
-    $('<li id="oneliner-'+oneliner.id+'">'+oneliner.value+' <a href="/channels/'+this.channel+'#oneliner-'+oneliner.id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
+    $('<li id="oneliner-'+oneliner.post_id+'">'+oneliner.text+' <a href="/channels/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
       .prependTo($('#oneliners'))
       .hide()
       .fadeIn();

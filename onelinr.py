@@ -47,13 +47,14 @@ class ChannelPage(webapp.RequestHandler):
       channel.put()
     
     posts = Post.all()
-    posts.ancestor(channel)    
+    posts.filter("belongs_to =", channel.key())    
     
     self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts}))
 
   def post(self):
-    Post(text=self.request.get('value'), belongs_to=self.request.get('key')).put()
-    self.response.out.write("Posted onelinr")
+    post = Post(text=self.request.get('value'), belongs_to=db.get(self.request.get('key')))
+    post.put()
+    self.response.out.write(simplejson.dumps(post))
     
 
 class LatestPosts(webapp.RequestHandler):

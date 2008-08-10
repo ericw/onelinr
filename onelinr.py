@@ -7,8 +7,6 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp \
   import template
-
-from django.utils import simplejson
   
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -64,7 +62,7 @@ class ChannelPage(webapp.RequestHandler):
     else: 
       next_id = 1
     
-    post = Post(text=self.request.get('value'), belongs_to=db.get(channel_key), post_id=next_id)
+    post = Post(text=utf8string(self.request.get('value')), belongs_to=db.get(channel_key), post_id=next_id)
     post = db.get(post.put())
     self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
     
@@ -111,6 +109,9 @@ def url_to_channel_name(url):
     return url_array[3].lower()
   else:
     return ""
+
+def utf8string(s):
+  return unicode(s, 'utf-8') 
 
 if __name__ == '__main__':
   main()

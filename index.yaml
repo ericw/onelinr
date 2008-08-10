@@ -16,11 +16,30 @@ indexes:
 # your application using appcfg.py.
 
 # Used once in query history.
+- kind: Channel
+  properties:
+  - name: name
+  - name: post_id
+
+# Used 6 times in query history.
+- kind: Channel
+  properties:
+  - name: name
+  - name: post_id
+    direction: desc
+
+# Unused in query history -- copied from input.
 - kind: Post
   properties:
   - name: belongs_to
   - name: id
 
-# Used 5 times in query history.
+# Used 466 times in query history.
+- kind: Post
+  properties:
+  - name: belongs_to
+  - name: post_id
+
+# Used 10 times in query history.
 - kind: Post
   ancestor: yes

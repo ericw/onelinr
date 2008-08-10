@@ -62,10 +62,10 @@ class ChannelPage(webapp.RequestHandler):
     else: 
       next_id = 1
     
-    post = Post(text=utf8string(self.request.get('value')), belongs_to=db.get(channel_key), post_id=next_id)
+    # force_unicode function from django used here
+    post = Post(text=force_unicode(self.request.get('value')), belongs_to=db.get(channel_key), post_id=next_id)
     post = db.get(post.put())
     self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
-    
 
 class LatestPosts(webapp.RequestHandler):
   def get(self):
@@ -109,6 +109,31 @@ def url_to_channel_name(url):
     return url_array[3].lower()
   else:
     return ""
+
+#from http://code.djangoproject.com/browser/django/trunk/django/utils/encoding.py
+def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
+    """
+    Similar to smart_unicode, except that lazy instances are resolved to
+    strings, rather than kept as lazy objects.
+
+    If strings_only is True, don't convert (some) non-string-like objects.
+    """
+    if strings_only and isinstance(s, (types.NoneType, int, long, datetime.datetime, datetime.date, datetime.time, float)):
+        return s
+    try:
+        if not isinstance(s, basestring,):
+            if hasattr(s, '__unicode__'):
+                s = unicode(s)
+            else:
+                s = unicode(str(s), encoding, errors)
+        elif not isinstance(s, unicode):
+            # Note: We use .decode() here, instead of unicode(s, encoding,
+            # errors), so that if s is a SafeString, it ends up being a
+            # SafeUnicode at the end.
+            s = s.decode(encoding, errors)
+    except UnicodeDecodeError, e:
+        raise DjangoUnicodeDecodeError(s, *e.args)
+    return s
 
 def utf8string(s):
   return unicode(s, 'utf-8') 

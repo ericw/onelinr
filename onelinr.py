@@ -10,6 +10,8 @@ from google.appengine.ext.webapp \
   
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+SKIP_LIST = ["favicon.ico","robots.txt"]
+
 class Channel(db.Model):
   name = db.StringProperty(required=True)
   fore_color = db.StringProperty()
@@ -34,6 +36,10 @@ class ChannelPage(webapp.RequestHandler):
   def get(self):
     name = url_to_channel_name(self.request.uri)
     
+    if name in SKIP_LIST:
+      self.redirect("/")
+      return
+    
     q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)      
     channel = q.get()
 
@@ -48,17 +54,18 @@ class ChannelPage(webapp.RequestHandler):
 
   def post(self):
     channel_key = self.request.get('key')
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel_key ORDER BY post_id DESC", channel_key=db.get(channel_key))
-    logging.info(channel_key)
+    channel = db.get(channel_key)
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)
+
     last_post = q.get()
     
     if last_post:
       next_id = last_post.post_id+1
     else: 
-      next_id = 1
+      next_id = 1    
     
     # force_unicode function from django used here
-    post = Post(text=force_unicode(self.request.get('value')), belongs_to=db.get(channel_key), post_id=next_id)
+    post = Post(text=force_unicode(self.request.get('value')), belongs_to=channel, post_id=next_id)
     post = db.get(post.put())
     self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
 
@@ -73,7 +80,7 @@ class ChannelFeed(webapp.RequestHandler):
       channel.put()
     
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)   
-    posts = q.fetch(100)
+    posts = q.fetch(100) #100 latest is sufficient
     
     self.response.out.write(template.render('channel_feed.html', {'channel':channel, 'posts':posts}))
 
@@ -82,7 +89,7 @@ class Feed(webapp.RequestHandler):
   def get(self):
 
     q = db.GqlQuery("SELECT * FROM Post ORDER BY date_posted DESC")   
-    posts = q.fetch(100)
+    posts = q.fetch(100) #100 latest is sufficient
     
     self.response.out.write(template.render('feed.html', {'posts':posts}))
     
@@ -94,11 +101,10 @@ class LatestPosts(webapp.RequestHandler):
     q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)
     channel = q.get()
     
-    # ADD ERROR CHECKING
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel AND post_id > :get_from ORDER BY post_id DESC", channel=channel, get_from=int(get_from))   #MAKE THIS BETTER   
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel AND post_id > :get_from ORDER BY post_id DESC", channel=channel, get_from=int(get_from))   
     posts = q.fetch(100)
-    logging.info(posts)
     
+    # Own JSON formatting
     posts_json = "["
     idx = 1
     for post in posts:
@@ -107,9 +113,7 @@ class LatestPosts(webapp.RequestHandler):
         posts_json += ","
       idx += 1
     posts_json += "]"
-    
-    logging.info(posts_json)
-    
+        
     self.response.out.write(posts_json)
 
 def main():
@@ -118,7 +122,7 @@ def main():
                                         ('/.*/feed', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=False)
+                                       debug=True)
                                        
   run_wsgi_app(application)
 

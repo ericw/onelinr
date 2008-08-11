@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+<title>onelinr</title>
+<link>http://onelinr.com/</link>
+<description>A feed of all recent onelinrs</description>
+<generator>http://onelinr.com/</generator>
+
+{% for post in posts %}
+<item>
+<title>{{ post.text }}</title>
+	<description>
+		{{post.text }}
+</description>
+<pubDate>{{post.date_posted}}</pubDate>
+<author>nobody@onelinr.com (nobody)</author>
+</item>
+{% endfor %}
+
+	</channel>
+</rss>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+<title>onelinr: {{ channel.name }}</title>
+<link>http://onelinr.com/</link>
+<description>A onelinr feed of channel {{ channel.name }}</description>
+<pubDate>{{channel.date_created}}</pubDate>
+<lastBuildDate>{{channel.date_created}}</lastBuildDate>
+<generator>http://onelinr.com/</generator>
+
+{% for post in posts %}
+<item>
+<title>{{ post.text }}</title>
+	<link>http://onelinr.com/{{channel.name}}#oneliner_{{ post.post_id }}</link>
+	<description>
+		{{post.text }}
+</description>
+<pubDate>{{post.date_posted}}</pubDate>
+<author>nobody@onelinr.com (nobody)</author>
+<guid isPermaLink="false">tag:onelinr.com,2007:/onelinr/{{post.post_id}}</guid>
+</item>
+{% endfor %}
+
+	</channel>
+</rss>

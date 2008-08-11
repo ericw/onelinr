@@ -29,11 +29,6 @@ class StartPage(webapp.RequestHandler):
     channels = Channel.all()
     self.response.out.write(template.render('index.html', {'channels':channels}))
 
-class AboutPage(webapp.RequestHandler):
-
-  def get(self):
-    self.response.out.write(template.render('about.html', {}))
-
 class ChannelPage(webapp.RequestHandler):
 
   def get(self):
@@ -67,6 +62,30 @@ class ChannelPage(webapp.RequestHandler):
     post = db.get(post.put())
     self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
 
+class ChannelFeed(webapp.RequestHandler):
+  def get(self):
+    name = url_to_channel_name(self.request.uri)
+    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)      
+    channel = q.get()
+
+    if not channel:
+      channel = Channel(name=name)
+      channel.put()
+    
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)   
+    posts = q.fetch(100)
+    
+    self.response.out.write(template.render('channel_feed.html', {'channel':channel, 'posts':posts}))
+
+
+class Feed(webapp.RequestHandler):
+  def get(self):
+
+    q = db.GqlQuery("SELECT * FROM Post ORDER BY date_posted DESC")   
+    posts = q.fetch(100)
+    
+    self.response.out.write(template.render('feed.html', {'posts':posts}))
+    
 class LatestPosts(webapp.RequestHandler):
   def get(self):
     name = url_to_channel_name(self.request.uri)
@@ -76,7 +95,7 @@ class LatestPosts(webapp.RequestHandler):
     channel = q.get()
     
     # ADD ERROR CHECKING
-    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :key AND post_id > :get_from ORDER BY post_id DESC", key=channel, get_from=int(get_from))   #MAKE THIS BETTER   
+    q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel AND post_id > :get_from ORDER BY post_id DESC", channel=channel, get_from=int(get_from))   #MAKE THIS BETTER   
     posts = q.fetch(100)
     logging.info(posts)
     
@@ -95,10 +114,11 @@ class LatestPosts(webapp.RequestHandler):
 
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
-                                        ('/about', AboutPage),
+                                        ('/feed', Feed),
+                                        ('/.*/feed', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=True)
+                                       debug=False)
                                        
   run_wsgi_app(application)
 

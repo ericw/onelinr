@@ -19,6 +19,7 @@ SKIP_LIST = ["favicon.ico","robots.txt"]
 
 class Channel(db.Model):
   name = db.StringProperty(required=True)
+  post_count = db.IntegerProperty(0)
   fore_color = db.StringProperty()
   back_color = db.StringProperty()
   font = db.TextProperty()
@@ -34,6 +35,7 @@ class StartPage(webapp.RequestHandler):
 
   def get(self):
     channels = Channel.all()
+    channels.order("-post_count")
     self.response.out.write(template.render('index.html', {'channels':channels}))
 
 class ChannelPage(webapp.RequestHandler):
@@ -49,7 +51,7 @@ class ChannelPage(webapp.RequestHandler):
     channel = q.get()
 
     if not channel:
-      channel = Channel(name=name)
+      channel = Channel(name=name,post_count=0)
       channel.put()
     
     posts = Post.all()
@@ -72,6 +74,14 @@ class ChannelPage(webapp.RequestHandler):
     # force_unicode function from django used here
     post = Post(text=force_unicode(self.request.get('value')), belongs_to=channel, post_id=next_id)
     post = db.get(post.put())
+
+    # update post_count
+    if post:
+      channel = db.get(channel_key)
+      logging.info(channel.post_count)
+      channel.post_count = channel.post_count + 1
+      channel.put()
+      
     self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"'}")
 
 class ChannelFeed(webapp.RequestHandler):

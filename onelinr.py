@@ -8,7 +8,12 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp \
   import template
   
+import re  
 from google.appengine.ext.webapp.util import run_wsgi_app
+from django.conf import settings
+import textile
+
+settings.INSTALLED_APPS = ('django.contrib.markup', 'onelinr')
 
 SKIP_LIST = ["favicon.ico","robots.txt"]
 
@@ -67,7 +72,7 @@ class ChannelPage(webapp.RequestHandler):
     # force_unicode function from django used here
     post = Post(text=force_unicode(self.request.get('value')), belongs_to=channel, post_id=next_id)
     post = db.get(post.put())
-    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}")
+    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"'}")
 
 class ChannelFeed(webapp.RequestHandler):
   def get(self):
@@ -108,7 +113,7 @@ class LatestPosts(webapp.RequestHandler):
     posts_json = "["
     idx = 1
     for post in posts:
-      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+post.text+"'}"
+      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"'}"
       if idx != len(posts):
         posts_json += ","
       idx += 1

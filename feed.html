@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 	<channel>
+{% load markup %}
+  
 <title>onelinr</title>
 <link>http://onelinr.com/</link>
 <description>A feed of all recent onelinrs</description>
@@ -9,10 +11,11 @@
 {% for post in posts %}
 <item>
 <title>{{ post.text }}</title>
-	<description>
-		{{post.text }}
-</description>
-<pubDate>{{post.date_posted}}</pubDate>
+
+<description><![CDATA[{{post.text|textile }}]]></description>
+<content:encoded><![CDATA[{{post.text|textile }}]]></content:encoded>
+
+<pubDate>{{ post.date_posted|date:"r" }}</pubDate>
 <author>nobody@onelinr.com (nobody)</author>
 </item>
 {% endfor %}

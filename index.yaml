@@ -40,7 +40,7 @@ indexes:
   - name: belongs_to
   - name: post_id
 
-# Used 59 times in query history.
+# Used 61 times in query history.
 - kind: Post
   properties:
   - name: date_posted

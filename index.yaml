@@ -28,7 +28,7 @@ indexes:
   - name: post_id
     direction: desc
 
-# Used 6 times in query history.
+# Used 25 times in query history.
 - kind: Channel
   properties:
   - name: post_count

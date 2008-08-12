@@ -36,7 +36,8 @@ class StartPage(webapp.RequestHandler):
   def get(self):
     channels = Channel.all()
     channels.order("-post_count")
-    self.response.out.write(template.render('index.html', {'channels':channels}))
+    channelCloud = renderChannelCloud(channels);
+    self.response.out.write(template.render('index.html', {'channels':channels,'channelCloud':channelCloud}))
 
 class ChannelPage(webapp.RequestHandler):
 
@@ -140,6 +141,25 @@ def main():
                                        debug=True)
                                        
   run_wsgi_app(application)
+
+# display channel tag cloud
+def renderChannelCloud(channels):
+  max, min = 0, 0
+  classes = ["size1","size2","size3","size4","size5"]
+
+  for c in channels:
+    if c.post_count > max:
+      max = c.post_count
+    if c.post_count < min:
+      min = c.post_count
+
+  divisor = ((max - min) / len(classes)) + 1
+
+  channelList = ""
+  for c in channels:
+    channelList += "<li class='" + classes[(c.post_count - min) / divisor] + "'><a href='/" + c.name + "'>" + c.name + "</a></li>"
+
+  return channelList
 
 
 def url_to_channel_name(url):

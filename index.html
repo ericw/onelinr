@@ -15,9 +15,7 @@
   </script>
   <h2>Active Onelinr Channels</h2>
   <ul id="channel-cloud">
-    {% for ch in channels %}
-      <li class=""><a href="/{{ch.name}}">{{ch.name}}</a></li>
-    {% endfor %}
+    {{channelCloud}}
   </ul>
   <div id="changelog">
     <h3>Changelog</h3>

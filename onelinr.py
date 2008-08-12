@@ -15,7 +15,7 @@ import textile
 
 settings.INSTALLED_APPS = ('django.contrib.markup', 'onelinr')
 
-SKIP_LIST = ["favicon.ico","robots.txt"]
+SKIP_LIST = ["favicon.ico","robots.txt", "feed"]
 
 class Channel(db.Model):
   name = db.StringProperty(required=True)

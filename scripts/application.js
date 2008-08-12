@@ -30,7 +30,6 @@ OnelinerManager.prototype = {
     $('#oneliner-form').bind('submit', function(ev) {
       if(self.onelinerText.val() !== "") {
         $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
-          console.log(data)
           self.displayOneliner(data);
           self.posted_oneliner_ids.push(data.post_id);
           self.onelinerText.val("").focus();
@@ -42,10 +41,19 @@ OnelinerManager.prototype = {
     setInterval(function() {
       $.getJSON('/'+self.channel+'/latest',{from_id: self.lastOnelinerId}, function(oneliners) {
         oneliners = oneliners.reverse();
-        console.log(oneliners)
         $.each(oneliners,function() {
           if ($.inArray(this.post_id,self.posted_oneliner_ids) === -1) {
             self.displayOneliner(this);
+            if(window.fluid) {
+              window.fluid.showGrowlNotification({
+                  title: "New Onelinr in " + self.channel, 
+                  description: this.text.replace(/(<([^>]+)>)/gi, ""), 
+                  priority: 1, 
+                  sticky: false,
+                  identifier: "onelinr",
+                  onclick: function() {}
+              });              
+            }
           }
         });
         // set lastOnelinerId to the last id fetched

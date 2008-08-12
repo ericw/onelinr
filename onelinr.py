@@ -15,7 +15,7 @@ import textile
 
 settings.INSTALLED_APPS = ('django.contrib.markup', 'onelinr')
 
-SKIP_LIST = ["favicon.ico","robots.txt"]
+SKIP_LIST = ["favicon.ico","robots.txt", "feed"]
 
 class Channel(db.Model):
   name = db.StringProperty(required=True)
@@ -135,10 +135,12 @@ class LatestPosts(webapp.RequestHandler):
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
                                         ('/feed', Feed),
+                                        ('/feed/', Feed),
                                         ('/.*/feed', ChannelFeed),
+                                        ('/.*/feed/', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=True)
+                                       debug=False)
                                        
   run_wsgi_app(application)
 

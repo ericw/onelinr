@@ -45,7 +45,7 @@ indexes:
   - name: belongs_to
   - name: post_id
 
-# Unused in query history -- copied from input.
+# Used once in query history.
 - kind: Post
   properties:
   - name: date_posted

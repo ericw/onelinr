@@ -134,10 +134,12 @@ class LatestPosts(webapp.RequestHandler):
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
                                         ('/feed', Feed),
+                                        ('/feed/', Feed),
                                         ('/.*/feed', ChannelFeed),
+                                        ('/.*/feed/', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=True)
+                                       debug=False)
                                        
   run_wsgi_app(application)
 

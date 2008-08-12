@@ -28,12 +28,14 @@ OnelinerManager.prototype = {
     this.onelinerText[0].focus();
     var self = this;
     $('#oneliner-form').bind('submit', function(ev) {
-      $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
-        console.log(data)
-        self.displayOneliner(data);
-        self.posted_oneliner_ids.push(data.post_id);
-        self.onelinerText.val("").focus();
-      },'json');
+      if(self.onelinerText.val() !== "") {
+        $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
+          console.log(data)
+          self.displayOneliner(data);
+          self.posted_oneliner_ids.push(data.post_id);
+          self.onelinerText.val("").focus();
+        },'json');        
+      }
       return false;
     });
 

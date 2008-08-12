@@ -100,7 +100,6 @@ class ChannelFeed(webapp.RequestHandler):
     
     self.response.out.write(template.render('channel_feed.html', {'channel':channel, 'posts':posts}))
 
-
 class Feed(webapp.RequestHandler):
   def get(self):
 
@@ -141,7 +140,7 @@ def main():
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
                                        debug=False)
-                                       
+
   run_wsgi_app(application)
 
 # display channel tag cloud

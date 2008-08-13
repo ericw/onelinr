@@ -28,12 +28,14 @@ OnelinerManager.prototype = {
     this.onelinerText[0].focus();
     var self = this;
     $('#oneliner-form').bind('submit', function(ev) {
-      if(self.onelinerText.val() !== "") {
+      if(self.onelinerText.val() !== "" && !self.posting) {
+        self.posting = true;
         $.post('/'+self.channel, {value:self.onelinerText.val(),key:$('#key').val()},function(data) {
           self.displayOneliner(data);
           self.posted_oneliner_ids.push(data.post_id);
           self.onelinerText.val("").focus();
-        },'json');        
+          self.posting = false;
+        },'json');
       }
       return false;
     });

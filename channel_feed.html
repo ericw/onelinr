@@ -12,7 +12,7 @@
 {% for post in posts %}
 <item>
 <title>{{ post.text}}</title>
-	<link>http://onelinr.com/{{channel.name}}#oneliner_{{ post.post_id }}</link>
+	<link>http://onelinr.com/{{channel.name}}#oneliner-{{ post.post_id }}</link>
   <description><![CDATA[{{post.text|textile }}]]></description>
   <content:encoded><![CDATA[{{post.text|textile }}]]></content:encoded>
 

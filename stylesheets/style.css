@@ -158,14 +158,6 @@ ul#channel-cloud li {
   line-height:24px;
 }
 
-#new_channel {}
-  #new_channel input[type=text] {
-    height:30px;
-    width:300px;
-    font-size:26px;
-    font-family:Georgia, serif;
-    margin:1em 0 1em 0; }
-
 .size1 {
   font-size:10px;
 }
@@ -191,20 +183,23 @@ ul#channel-cloud li {
   width:400px;
   font-size:26px;
   font-family:Georgia, serif;
-  margin:1em 1em 1em 1em;
+  margin:1em auto 1em auto;
   border:0;
   border-bottom:2px dotted #EC7BF4;
+  text-align: center;
+  display: block;
 }
 
 #handle {
   height:30px;
-  width:400px;
+  width:300px;
   font-size:26px;
   font-family:Georgia, serif;
   margin:1em auto 1em auto;
   border:0;
   border-bottom:2px dotted #EC7BF4;
   display: block;
+  text-align: center;
 }
 
 #handle-page h1 {

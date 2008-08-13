@@ -62,12 +62,30 @@ OnelinerManager.prototype = {
         }
       });
     },4000);
+
+    // unread count for fluid
+    if(window.fluid) {
+      this.unread = 0;
+      $(window).blur(function() {
+        self.countUnread = true;
+      })
+      $(window).focus(function() {
+        self.countUnread = false;
+        self.unread = 0;
+        window.fluid.dockBadge = null;
+      })      
+    }
+
   },
   displayOneliner: function(oneliner) {
     $('<li id="oneliner-'+oneliner.post_id+'"><span class="handle">'+ oneliner.handle +'</span> '+oneliner.text+' <a href="/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
       .prependTo($('#oneliners'))
       .hide()
       .fadeIn();
+    if(window.fluid && this.countUnread) {
+      this.unread++;
+      window.fluid.dockBadge = this.unread;
+    }
   },
 };
 

@@ -1,8 +1,8 @@
 {% load markup %}
 {% include "header.html" %}
 <div id="header">
-  <a id="text-logo" href="/">Onelinr</a> | You are viewing the {{channel.name}} oneliner channel. <a href="http://hobix.com/textile/">Textile</a> is enabled.
-{{user_html}}
+  {{user_html}}
+  <a id="text-logo" href="/">Onelinr</a> | You are viewing the <em>{{channel.name}}</em> oneliner channel. <a href="http://hobix.com/textile/">Textile</a> is enabled.
 <!--  <span id="customizr">
     <span id="text-color">
       <form>
@@ -34,7 +34,7 @@ This is a test oneliner.
   {% for p in posts %}
   <li id="oneliner-{{p.post_id}}">
     
-    {{p.text|textile}}
+    <span class="handle">{{p.posted_by.handle}}</span> {{p.text|textile}}
     <a href="http://onelinr.com/{{channel.name}}#oneliner-{{p.post_id}}" title="Permalink for this oneliner" class="permalink">#</a>
   </li>
   {% endfor %}

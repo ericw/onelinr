@@ -33,7 +33,7 @@ indexes:
   - name: post_id
     direction: desc
 
-# Used once in query history.
+# Unused in query history -- copied from input.
 - kind: Post
   properties:
   - name: belongs_to
@@ -45,18 +45,18 @@ indexes:
   - name: belongs_to
   - name: post_id
 
-# Used 65 times in query history.
+# Unused in query history -- copied from input.
 - kind: Post
   properties:
   - name: date_posted
     direction: desc
 
-# Used 6 times in query history.
+# Unused in query history -- copied from input.
 - kind: Post
   properties:
   - name: id
     direction: desc
 
-# Used 5 times in query history.
+# Unused in query history -- copied from input.
 - kind: Post
   ancestor: yes

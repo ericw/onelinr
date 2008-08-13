@@ -44,7 +44,7 @@ class StartPage(webapp.RequestHandler):
     channels = Channel.all()
     channels.order("-post_count")
     channelCloud = renderChannelCloud(channels);
-    self.response.out.write(template.render('index.html', {'channels':channels,'channelCloud':channelCloud}))
+    self.response.out.write(template.render('index.html', {'channels':channels,'channelCloud':channelCloud,'page_title':'Onelinr'}))
 
 class ChannelPage(webapp.RequestHandler):
 
@@ -70,7 +70,7 @@ class ChannelPage(webapp.RequestHandler):
     
     user_html = generate_handle_links(google_user, user, self.request)
     
-    self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts, 'user_html':user_html}))
+    self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts, 'user_html':user_html,'page_title':'Onelinr Channel: ' + channel.name}))
 
   def post(self):
     google_user = users.get_current_user()
@@ -113,12 +113,16 @@ class HandlePage(webapp.RequestHandler):
     google_user = users.get_current_user()
 
     if not google_user:
-      self.redirect(users.create_login_url(self.request.uri))      
+      self.redirect(users.create_login_url(self.request.uri))
     
     if get_user(google_user) and self.request.get("c") != "1":
-      self.redirect("/"+channel_name)     
+      self.redirect("/"+channel_name)
+    elif get_user(google_user) and self.request.get("c") == "1":
+      user = get_user(google_user)
+      logging.info(user.handle)
+      self.response.out.write(template.render('handle.html',{'page_title':'Onelinr','channel':channel_name,'handle':user.handle}))
     else:
-      self.response.out.write(template.render('handle.html',{}))
+      self.response.out.write(template.render('handle.html',{'page_title':'Onelinr','channel':channel_name}))
 
   def post(self):
     channel_name = url_to_channel_name(self.request.uri)
@@ -238,13 +242,13 @@ def generate_handle_links(google_user, user, request):
   if google_user:
     if user:
       url = users.create_logout_url(request.uri)
-      html = "Your handle is <i>"+user.handle+"</i>, <a href='/"+channel_name+"/handle?c=1'>change it</a> or <a href='"+url+"'>Sign out</a>"
+      html = "<span class='user'>Your handle is <em>"+user.handle+"</em>, <a href='/"+channel_name+"/handle?c=1'>change it</a> or <a href='"+url+"'>Sign out</a></span>"
     else:
       url = users.create_logout_url(request.uri)
-      html = "<a href='/"+channel_name+"/handle'>Choose a handle</a> or <a href='"+url+"'>Sign out</a>"
+      html = "<span class='user'><a href='/"+channel_name+"/handle'>Choose a handle</a> or <a href='"+url+"'>Sign out</a></span>"
   else:
     url = users.create_login_url("/"+channel_name+"/handle")
-    html = "<a href='"+url+"'>Sign in</a>"
+    html = "<span class='user'><a href='"+url+"'>Sign in</a></span>"
   
   return html
 

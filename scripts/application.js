@@ -64,7 +64,7 @@ OnelinerManager.prototype = {
     },4000);
   },
   displayOneliner: function(oneliner) {
-    $('<li id="oneliner-'+oneliner.post_id+'">'+oneliner.text+' <a href="/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
+    $('<li id="oneliner-'+oneliner.post_id+'"><span class="handle">'+ oneliner.handle +'</span> '+oneliner.text+' <a href="/'+this.channel+'#oneliner-'+oneliner.post_id+'" class="permalink" title="Permalink for this oneliner">#</a></li>')
       .prependTo($('#oneliners'))
       .hide()
       .fadeIn();
@@ -95,3 +95,11 @@ $(function(){
     //var customizr = new ChannelCustomizr();
   }
 });
+
+$(function() {
+  $("#handle-page").each(function() {
+    var handle = $("#handle")[0];
+    handle.focus();
+    handle.select();
+  });
+})

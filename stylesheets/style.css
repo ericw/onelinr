@@ -21,6 +21,7 @@ body, p, ol, ul, td {
   background-repeat:no-repeat;
   background-position : 6px 14px;
   padding : 5px 0 0 3%;
+  border-top: 1px solid #CCCCCC;
    }
 
   #oneliner-form #oneliner_value {
@@ -35,7 +36,7 @@ body, p, ol, ul, td {
 
 #oneliners {
   z-index:10;
-  margin-top:25px;
+  margin: 25px 0 50px 0;
 	font-size:36px;
 	padding:5px; }
 	#oneliners li {
@@ -45,6 +46,12 @@ body, p, ol, ul, td {
 	#oneliners li p {
 	  margin : 0;
   	font-size:36px;
+  	display: inline;
+	}
+	
+	#oneliners li span.handle {
+	  color: #bbb;
+	  padding-right: .0em;
 	}
 	  #oneliners li .permalink {
 	    font-size:.8em;
@@ -80,11 +87,12 @@ a:hover { color: #fff; background-color:#000; }
   background:#eee;
   border-bottom:1px solid #ccc;
   margin:0;
-  padding:3px;
-  width:100%;
+  padding: .3em .5%;
+  width:99%;
   position:fixed;
   top:0;
   left:0;
+  right: 0;
   z-index:100; }
 
 #header #customizr {
@@ -105,13 +113,22 @@ a:hover { color: #fff; background-color:#000; }
   #header #customizr #text-color .value {background:#333;}
   #header #customizr #background .value {background:#fff;}
 
+#header .user {
+  float: right;
+}
+
 #welcome {
   width:600px;
-  margin:100px auto;
+  margin:50px auto;
 }
 
 #welcome p {
   font-size:26px;  
+}
+
+#handle-page #container {
+  width:600px;
+  margin:50px auto;
 }
 
 h1 {
@@ -177,6 +194,48 @@ ul#channel-cloud li {
   margin:1em 1em 1em 1em;
   border:0;
   border-bottom:2px dotted #EC7BF4;
+}
+
+#handle {
+  height:30px;
+  width:400px;
+  font-size:26px;
+  font-family:Georgia, serif;
+  margin:1em auto 1em auto;
+  border:0;
+  border-bottom:2px dotted #EC7BF4;
+  display: block;
+}
+
+#handle-page h1 {
+  text-align: center;
+}
+
+#handle-buttons {
+  padding: 1em 0 0 0;
+  text-align : center;
+  font-size: 20px;
+}
+
+#handle-buttons input {
+  font-size: 20px;
+  font-family:Georgia, serif;
+  margin: 0 1em 0 1em;
+  padding: 0 .6em 0 .6em;
+  -moz-border-radius : 7px;
+  -webkit-border-radius : 7px;
+  border: 1px solid #aaa;
+  cursor: pointer;
+  background-color: #eee;
+}
+
+#handle-buttons input:hover {
+  background-color: black;
+  color: white;
+}
+
+#handle-buttons a {
+  margin-left: 1em;
 }
 
 #new_channel {

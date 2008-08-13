@@ -20,43 +20,43 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used once in query history.
+# Unused in query history -- copied from input.
 - kind: Channel
   properties:
   - name: name
   - name: post_id
 
-# Used 6 times in query history.
+# Unused in query history -- copied from input.
 - kind: Channel
   properties:
   - name: name
   - name: post_id
     direction: desc
 
-# Unused in query history -- copied from input.
+# Used once in query history.
 - kind: Post
   properties:
   - name: belongs_to
   - name: id
 
-# Used 466 times in query history.
+# Unused in query history -- copied from input.
 - kind: Post
   properties:
   - name: belongs_to
   - name: post_id
 
-# Used once in query history.
+# Used 65 times in query history.
 - kind: Post
   properties:
   - name: date_posted
     direction: desc
 
-# Unused in query history -- copied from input.
+# Used 6 times in query history.
 - kind: Post
   properties:
   - name: id
     direction: desc
 
-# Used 10 times in query history.
+# Used 5 times in query history.
 - kind: Post
   ancestor: yes

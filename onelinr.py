@@ -8,6 +8,8 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp \
   import template
   
+from google.appengine.api import users
+
 import re  
 from google.appengine.ext.webapp.util import run_wsgi_app
 from django.conf import settings
@@ -19,18 +21,23 @@ SKIP_LIST = ["favicon.ico","robots.txt", "feed"]
 
 class Channel(db.Model):
   name = db.StringProperty(required=True)
-  post_count = db.IntegerProperty(0)
+  post_count = db.IntegerProperty(default=0)
   fore_color = db.StringProperty()
   back_color = db.StringProperty()
   font = db.TextProperty()
   date_created = db.DateTimeProperty(auto_now_add=True)
+
+class User(db.Model):
+  google_user = db.UserProperty(required=True)
+  handle = db.StringProperty(required=True)
 
 class Post(db.Model):
   text = db.StringProperty()
   belongs_to = db.ReferenceProperty(Channel)
   date_posted = db.DateTimeProperty(auto_now_add=True)
   post_id = db.IntegerProperty()
-  
+  posted_by = db.ReferenceProperty(User)
+    
 class StartPage(webapp.RequestHandler):
 
   def get(self):
@@ -52,15 +59,23 @@ class ChannelPage(webapp.RequestHandler):
     channel = q.get()
 
     if not channel:
-      channel = Channel(name=name,post_count=0)
+      channel = Channel(name=name)
       channel.put()
     
     posts = Post.all()
     posts.filter("belongs_to =", channel.key()).order('-post_id')
     
-    self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts}))
+    google_user = users.get_current_user()
+    user = get_user(google_user)
+    
+    user_html = generate_handle_links(google_user, user, self.request)
+    
+    self.response.out.write(template.render('channel.html', {'channel':channel, 'posts':posts, 'user_html':user_html}))
 
   def post(self):
+    google_user = users.get_current_user()
+    user = get_user(google_user)
+
     channel_key = self.request.get('key')
     channel = db.get(channel_key)
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)
@@ -71,11 +86,17 @@ class ChannelPage(webapp.RequestHandler):
       next_id = last_post.post_id+1
     else: 
       next_id = 1    
-    
+        
     # force_unicode function from django used here
     post = Post(text=force_unicode(self.request.get('value')), belongs_to=channel, post_id=next_id)
+    
+    if google_user and user:
+      post.posted_by = user
+      handle = user.handle
+    else:
+      handle = ""
     post = db.get(post.put())
-
+    
     # update post_count
     if post:
       channel = db.get(channel_key)
@@ -83,7 +104,47 @@ class ChannelPage(webapp.RequestHandler):
       channel.post_count = channel.post_count + 1
       channel.put()
       
-    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"'}")
+    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"', 'handle':'"+re.escape(handle)+"'}")
+
+class HandlePage(webapp.RequestHandler):
+
+  def get(self):
+    channel_name = url_to_channel_name(self.request.uri)
+    google_user = users.get_current_user()
+
+    if not google_user:
+      self.redirect(users.create_login_url(self.request.uri))      
+    
+    if get_user(google_user) and self.request.get("c") != "1":
+      self.redirect("/"+channel_name)     
+    else:
+      self.response.out.write(template.render('handle.html',{}))
+
+  def post(self):
+    channel_name = url_to_channel_name(self.request.uri)
+    
+    self.request.get("handle")
+    
+    handle = self.request.get("handle").strip()
+        
+    if len(handle) < 1:
+      self.redirect(self.request.uri)
+    else:
+      google_user = users.get_current_user()
+    
+      if not google_user:
+        self.redirect(user.get_login_url(self.request.uri))      
+    
+      user = get_user(google_user)
+    
+      if not user:
+        user = User(handle=handle, google_user=google_user)
+      else:
+        user.handle = handle
+    
+      user.put()
+    
+      self.redirect("/"+channel_name)
 
 class ChannelFeed(webapp.RequestHandler):
   def get(self):
@@ -123,7 +184,12 @@ class LatestPosts(webapp.RequestHandler):
     posts_json = "["
     idx = 1
     for post in posts:
-      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"'}"
+      if post.posted_by:
+        handle = post.posted_by.handle
+      else:
+        handle = ""
+      
+      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"', 'handle':'"+re.escape(handle)+"'}"
       if idx != len(posts):
         posts_json += ","
       idx += 1
@@ -133,13 +199,14 @@ class LatestPosts(webapp.RequestHandler):
 
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
+                                        ('/.*/handle', HandlePage),
                                         ('/feed', Feed),
                                         ('/feed/', Feed),
                                         ('/.*/feed', ChannelFeed),
                                         ('/.*/feed/', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=False)
+                                       debug=True)
 
   run_wsgi_app(application)
 
@@ -162,6 +229,24 @@ def renderChannelCloud(channels):
 
   return channelList
 
+def get_user(google_user):
+  q = db.GqlQuery("SELECT * FROM User WHERE google_user = :google_user", google_user=google_user)  
+  return q.get()
+
+def generate_handle_links(google_user, user, request):
+  channel_name = url_to_channel_name(request.uri)
+  if google_user:
+    if user:
+      url = users.create_logout_url(request.uri)
+      html = "Your handle is <i>"+user.handle+"</i>, <a href='/"+channel_name+"/handle?c=1'>change it</a> or <a href='"+url+"'>Sign out</a>"
+    else:
+      url = users.create_logout_url(request.uri)
+      html = "<a href='/"+channel_name+"/handle'>Choose a handle</a> or <a href='"+url+"'>Sign out</a>"
+  else:
+    url = users.create_login_url("/"+channel_name+"/handle")
+    html = "<a href='"+url+"'>Sign in</a>"
+  
+  return html
 
 def url_to_channel_name(url):
   url_array = url.split("/")

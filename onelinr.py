@@ -42,6 +42,7 @@ class StartPage(webapp.RequestHandler):
 
   def get(self):
     channels = Channel.all()
+    channels.filter("post_count >", 0)
     channels.order("-post_count")
     channelCloud = renderChannelCloud(channels);
     self.response.out.write(template.render('index.html', {'channels':channels,'channelCloud':channelCloud,'page_title':'Onelinr'}))
@@ -210,7 +211,7 @@ def main():
                                         ('/.*/feed/', ChannelFeed),
                                         ('/.*/latest', LatestPosts),
                                         ('/.*', ChannelPage) ],
-                                       debug=True)
+                                       debug=False)
 
   run_wsgi_app(application)
 

@@ -39,7 +39,7 @@ This is a test oneliner.
   </li>
   {% endfor %}
 </ul>
-<form action="{{channel.name}}" method="post" id="oneliner-form" accept-charset="UTF-8" onsubmit="return false">
+<form action="/{{channel.name}}" method="post" id="oneliner-form" accept-charset="UTF-8" onsubmit="return false">
   <input type="hidden" value="{{channel.key}}" id="key">
   <div>
     <input type="text" id="oneliner_value" name="value" autocomplete="off">

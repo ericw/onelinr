@@ -88,7 +88,7 @@ OnelinerManager.prototype = {
       this.unread++;
       window.fluid.dockBadge = this.unread;
     }
-  },
+  }
 };
 
 // var ChannelCustomizr = Class.create();
@@ -110,9 +110,8 @@ OnelinerManager.prototype = {
 
 /* attach observers */
 $(function(){
-  if ($('#oneliners').length > 0 && (current_channel = $('#current_channel'))) {
-    new OnelinerManager(current_channel.html());
-    //var customizr = new ChannelCustomizr();
+  if ($('#oneliners').length > 0) {
+    new OnelinerManager($('#current_channel').html());
   }
 });
 

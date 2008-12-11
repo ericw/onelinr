@@ -9,11 +9,13 @@ from google.appengine.ext.webapp \
   import template
   
 from google.appengine.api import users
-
-import re  
 from google.appengine.ext.webapp.util import run_wsgi_app
 from django.conf import settings
 import textile
+
+from google.appengine.api import memcache
+
+from django.utils import simplejson
 
 settings.INSTALLED_APPS = ('django.contrib.markup', 'onelinr')
 
@@ -41,11 +43,15 @@ class Post(db.Model):
 class StartPage(webapp.RequestHandler):
 
   def get(self):
-    channels = Channel.all()
-    channels.filter("post_count >", 0)
-    channels.order("-post_count")
-    channelCloud = renderChannelCloud(channels);
-    self.response.out.write(template.render('index.html', {'channels':channels,'channelCloud':channelCloud,'page_title':'Onelinr'}))
+    channelCloud = memcache.get("channelCloud")
+    if channelCloud is None:    
+      channels = Channel.all()
+      channels.filter("post_count >", 0)
+      channels.order("-post_count")
+      channelCloud = renderChannelCloud(channels);
+      memcache.set("channelCloud", channelCloud, 86400)
+    
+    self.response.out.write(template.render('index.html', {'channelCloud':channelCloud,'page_title':'Onelinr'}))
 
 class ChannelPage(webapp.RequestHandler):
 
@@ -79,8 +85,8 @@ class ChannelPage(webapp.RequestHandler):
 
     channel_key = self.request.get('key')
     channel = db.get(channel_key)
+    
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)
-
     last_post = q.get()
     
     if last_post:
@@ -96,16 +102,19 @@ class ChannelPage(webapp.RequestHandler):
       handle = user.handle
     else:
       handle = ""
-    post = db.get(post.put())
+
+    channel.post_count += 1
     
-    # update post_count
-    if post:
-      channel = db.get(channel_key)
-      logging.info(channel.post_count)
-      channel.post_count = channel.post_count + 1
-      channel.put()
-      
-    self.response.out.write("{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"', 'handle':'"+re.escape(handle)+"'}")
+    batch = [post, channel]
+    db.put(batch)
+    
+    d = {
+      'post_id':post.post_id,
+      'text':textile.textile(post.text),
+      'handle':handle,
+    }
+
+    self.response.out.write(simplejson.dumps(d))
 
 class HandlePage(webapp.RequestHandler):
 
@@ -162,7 +171,7 @@ class ChannelFeed(webapp.RequestHandler):
       channel.put()
     
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel ORDER BY post_id DESC", channel=channel)   
-    posts = q.fetch(100) #100 latest is sufficient
+    posts = q.fetch(20) #20 latest is sufficient
     
     self.response.out.write(template.render('channel_feed.html', {'channel':channel, 'posts':posts}))
 
@@ -170,7 +179,7 @@ class Feed(webapp.RequestHandler):
   def get(self):
 
     q = db.GqlQuery("SELECT * FROM Post ORDER BY date_posted DESC")   
-    posts = q.fetch(100) #100 latest is sufficient
+    posts = q.fetch(20) #20 latest is sufficient
     
     self.response.out.write(template.render('feed.html', {'posts':posts}))
     
@@ -179,29 +188,34 @@ class LatestPosts(webapp.RequestHandler):
     name = url_to_channel_name(self.request.uri)
     get_from = self.request.get('from_id')
     
-    q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)
-    channel = q.get()
+    channel = memcache.get(name)
+    if channel is None:
+      q = db.GqlQuery("SELECT * FROM Channel WHERE name = :name", name=name)
+      channel = q.get()
+      memcache.set(name, channel)
     
     q = db.GqlQuery("SELECT * FROM Post WHERE belongs_to = :channel AND post_id > :get_from ORDER BY post_id DESC", channel=channel, get_from=int(get_from))   
-    posts = q.fetch(100)
+    posts = q.fetch(50)
     
-    # Own JSON formatting
-    posts_json = "["
-    idx = 1
+    d = {}    
     for post in posts:
       if post.posted_by:
         handle = post.posted_by.handle
       else:
         handle = ""
-      
-      posts_json += "{'post_id':"+str(post.post_id)+",'text':'"+re.escape(textile.textile(post.text))+"', 'handle':'"+re.escape(handle)+"'}"
-      if idx != len(posts):
-        posts_json += ","
-      idx += 1
-    posts_json += "]"
-        
-    self.response.out.write(posts_json)
 
+      d.update({
+        'post_id':post.post_id,
+        'text':textile.textile(post.text),
+        'handle':handle,
+      })
+    
+    if len(d) > 0:  
+      tmp = [d]
+      self.response.out.write(simplejson.dumps(tmp))
+    else:
+      self.response.out.write("[]")
+      
 def main():
   application = webapp.WSGIApplication([('/', StartPage),
                                         ('/.*/handle', HandlePage),
